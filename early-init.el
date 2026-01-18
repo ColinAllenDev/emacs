@@ -1,5 +1,9 @@
-;;; early-init.el --- Early Init File -*- lexical-binding t -*-
+;; early-init.el --- Early Init File -*- lexical-binding: t; -*-
 
+;;; General Configuration
+;; Identification
+(setq user-full-name "Colin Allen"
+      user-mail-address "colinallen.dev@gmail.com")
 ;; Disable built-in pacakge.el in favor of elpaca.el
 (setq package-enable-at-startup nil)
 ;; Disable default init
@@ -11,16 +15,20 @@
 ;; Silence bells
 (setq ring-bell-function #'ignore
       inhibit-startup-screen t)
-
-;; Set default and backup fonts
-(push '(font . "Lilex") default-frame-alist)
-(set-face-font 'default "Lilex")
-(set-face-font 'variable-pitch "Lilex")
-(copy-face 'default 'fixed-pitch)
-k
 ;; Inhibit some warning messages
 (setq byte-compile-warnings '(not obsolete))
 (setq warning-suppress-log-types '((comp) (bytecomp)))
 (setq native-comp-async-report-warnings-errors 'silent)
 
-(provide 'early-init)
+;;; Performance Tweaks
+(customize-set-variable 'native-comp-speed 2)
+(customize-set-variable 'native-comp-deferred-compilation t)
+;; Skip regexpr searching in file-name-handler-alist to improve start time
+(defvar default-file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
+
+;; Local Variables:
+;; no-byte-compile: t
+;; no-native-compile: t
+;; no-update-autoloads: t
+;; End:
