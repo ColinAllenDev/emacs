@@ -43,13 +43,27 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
-;;;;;;;;;;;;;;;;;;
-;;;; Packages ;;;;
-;;;;;;;;;;;;;;;;;;
-;; Org Mode - emacs major mode for notes, lists, etc.
-(elpaca org :wait t)
+;; Elpaca helper function 
+(defmacro with-after-elpaca-init (&rest body) 
+  "Adds @body to `elpaca-after-init-hook`" 
+  `(add-hook 'elpaca-after-init-hook (lambda (), @body)))
 
-;; Install use-package support for Elpaca
+;;; Packages ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; - Common use-package Keywords                                ;;
+;;   - :preface - Evaluated first                               ;;
+;;   - :init    - Evalued before loading package                ;;
+;;   - :config  - Evalued after loading package                 ;;
+;;   - :custom  - Set user-options, evaluted immediately        ;;
+;;   - :ensure  - Automatically install package                 ;;
+;;   - :demand  - Evaluate package immediately                  ;;
+;;   - :defer   - Evaluate package when used (lazy load)        ;;
+;; - Elpaca use-package Keywords                                ;;
+;;   - :wait    - Blocks until package is installed             ;;
+;;     - e.g. (use-package general :ensure (:wait t) :demand t) ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Elpaca Use Package - use-package support for elpaca
+;; - Use `:ensure nil` to disable elpaca's use-package mode
 (elpaca elpaca-use-package
   (require 'elpaca-use-package)
   (elpaca-use-package-mode)
@@ -57,22 +71,26 @@
   (setq use-package-always-ensure t)
   (setq use-package-always-defer t))
 
-;; When installing a package which modifies a form used at the top-level
-;; (e.g. a package which adds a use-package key word)
-;; Use `elpaca-wait` to block until that package has been installed/configured.
-;; For Example:
-;; (use-package general :demand t)
-;; (elpaca-wait)
-(elpaca-wait)
+;; Org Mode - emacs major mode for notes, lists, etc.
+(use-package org
+  :ensure nil
+  :custom
+  (org-startup-with-inline-images t)
+  (org-image-actual-width nil))
 
-;; Define helper macros for Elpaca
-(defmacro use-feature (name &rest args)
-  "Like `use-package` but accounting for async installation."
-  (declare (indent defun))
-  `(use-package ,name :ensure nil ,@args))
-(defmacro with-after-elpaca-init (&rest body)
-  "Adds @body to `elpaca-after-init-hook`"
-  `(add-hook 'elpaca-after-init-hook (lambda (), @body)))
+;; Org Remark - Text highlighting in Org Mode
+(use-package org-remark 
+  :after org 
+  :config 
+  (org-remark-global-tracking-mode +1) 
+  (org-remark-create "dark-pastel-green" '(:background "#3a6b35")) 
+  (org-remark-create "dark-pastel-blue" '(:background "#34547a")) 
+  (org-remark-create "dark-pastel-red" '(:background "#7a453a")) 
+  (org-remark-create "dark-pastel-purple" '(:background "#6a4b7b")) 
+  (org-remark-create "dark-pastel-orange" '(:background "#b56c49")) 
+  (org-remark-create "dark-pastel-teal" '(:background "#3b7165")) 
+  (org-remark-create "dark-pastel-brown" '(:background "#7b6046")) 
+  (org-remark-create "dark-pastel-yellow" '(:background "#a6954e"))) 
 
 ;; Evil Mode - come to the dark side.
 (use-package evil
@@ -102,9 +120,6 @@
   :init
   (marginalia-mode))
 
-;; Note ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; For built-in packages, use :ensure nil ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Savehist - Persist history over emacs restarting (Vertico sorts by history)
 (use-package savehist
