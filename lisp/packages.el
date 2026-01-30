@@ -46,9 +46,11 @@
 ;; Elpaca helper function 
 (defmacro with-after-elpaca-init (&rest body) 
   "Adds @body to `elpaca-after-init-hook`" 
-  `(add-hook 'elpaca-after-init-hook (lambda (), @body)))
+  `(add-hook 'elpaca-after-init-hook (lambda (), @body)))    
 
-;;; Packages ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;
+;;; Packages ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; - Common use-package Keywords                                ;;
 ;;   - :preface - Evaluated first                               ;;
 ;;   - :init    - Evalued before loading package                ;;
@@ -71,43 +73,74 @@
   (setq use-package-always-ensure t)
   (setq use-package-always-defer t))
 
+;; Evil Mode - come to the dark side.
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-vsplit-window-right t)
+  (setq evil-split-window-below t)
+  (evil-mode)
+  :config
+  (evil-set-undo-system 'undo-redo))
+(use-package evil-collection
+  :after evil
+  :config
+  (setq evil-collection-mode-list '(dashboard dired ibuffer vterm))
+  (evil-collection-init))
+(use-package evil-org
+  :after org
+  :diminish
+  :hook (org-mode . evil-org-mode)
+  :config
+  (evil-org-set-key-theme '(textobjects insert navigation additional shift todo heading))
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+(use-package evil-tutor)
+
 ;; Org Mode - emacs major mode for notes, lists, etc.
 (use-package org
   :ensure nil
+  :config
+  (setq initial-buffer-choice 'dashboard-open)
   :custom
   (org-startup-with-inline-images t)
   (org-image-actual-width nil))
 
-;; Org Remark - Text highlighting in Org Mode
-(use-package org-remark 
-  :after org 
-  :config 
-  (org-remark-global-tracking-mode +1) 
-  (org-remark-create "dark-pastel-green" '(:background "#3a6b35")) 
-  (org-remark-create "dark-pastel-blue" '(:background "#34547a")) 
-  (org-remark-create "dark-pastel-red" '(:background "#7a453a")) 
-  (org-remark-create "dark-pastel-purple" '(:background "#6a4b7b")) 
-  (org-remark-create "dark-pastel-orange" '(:background "#b56c49")) 
-  (org-remark-create "dark-pastel-teal" '(:background "#3b7165")) 
-  (org-remark-create "dark-pastel-brown" '(:background "#7b6046")) 
-  (org-remark-create "dark-pastel-yellow" '(:background "#a6954e"))) 
-
-;; Evil Mode - come to the dark side.
-(use-package evil
+;; Ultra Scroll - Smooth scrolling plugin
+(use-package ultra-scroll
   :init
-  (setq evil-want-keybinding nil)
-  (setq evil-vsplit-window-right t)
-  (setq evil-split-window-below t)
-  (evil-mode))
-(use-package evil-collection
-  :after evil
+  (setq scroll-conservatively 3)
+  (setq scroll-margin 0)
   :config
-  (setq evil-collection-mode-list '(dashboard dired ibuffer))
-  (evil-collection-init))
-(use-package evil-tutor)
+  (ultra-scroll-mode 1))
 
-;; Corfu - Completion in Region 
+;;;;;;;;;;;;;;;;
+;; UI | Icons ;;
+;;;;;;;;;;;;;;;;
+;; All the Icons - an icon pack for emacs
+(use-package all-the-icons
+  :if (display-graphic-p))
 
+;;;;;;;;;;;;;;;;;;;;
+;; UI | Dashboard ;;
+;;;;;;;;;;;;;;;;;;;;
+;; Dashboard - an emacs dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (setq dashboard-banner-logo-title "Welcome to hell.")
+  (setq dashboard-center-content t)
+  (setq dashboard-display-icons-p t)
+  (setq dashboard-icon-type 'all-the-icons)
+  (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+  (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
+  (add-hook 'server-after-make-frame-hook #'dashboard-open)
+  (dashboard-setup-startup-hook))
+
+;;;;;;;;;;;;;;;;;;;;;;
+;; UI | Mini-Buffer ;;
+;;;;;;;;;;;;;;;;;;;;;;
 ;; Vertico - Vertical Mini-Buffer Completions
 (use-package vertico
   :init
@@ -120,22 +153,32 @@
   :init
   (marginalia-mode))
 
-
 ;; Savehist - Persist history over emacs restarting (Vertico sorts by history)
 (use-package savehist
   :ensure nil
   :init
   (savehist-mode))
 
+;; Corfu - Completion in Region 
+(use-package corfu
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-quit-no-match t)
+  :init
+  (global-corfu-mode)
+  (corfu-popupinfo-mode))
+
 (use-package emacs
   :ensure nil
   :config
   (setq ring-bell-function #'ignore)
   :custom
-  (context-menu-mode t) ; Enable context menu
-  (enable-recursive-minibuffers t) ; Support opening new minibuffers from inside existing ones
+  (text-mode-ispell-word-completion nil)                                   ; Disable Ispell completion
+  (context-menu-mode t)                                                    ; Enable context menu
+  (enable-recursive-minibuffers t)                                         ; Support new minibuffers inside existing ones
   (read-extended-command-predicate #'command-completion-default-include-p) ; Hide commands unusable in the current buffer
   (minibuffer-prompt-properties
-   '(read-only t cursor-intangible t face minibuffer-prompt))) ; Disallow cursor in mini-buffer prompt
+   '(read-only t cursor-intangible t face minibuffer-prompt)))             ; Disallow cursor in mini-buffer prompt
 
 (provide 'packages)

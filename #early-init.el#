@@ -5,9 +5,9 @@
 (setq user-full-name "Colin Allen"
       user-mail-address "colinallen.dev@gmail.com")
 ;; Disable built-in pacakge.el in favor of elpaca.el
-(setq package-enable-at-startup nil)
-;; Default to dashboard buffer
-(setq initial-buffer-choice 'dashboard-open)
+(setq package-enable-at-startup nil
+;; Disable default init
+(setq inhibit-default-init nil)
 ;; Silence native comp warnings and error from main Emacs session
 (setq native-comp-async-report-warnings-error nil)
 ;; Inhibit frame resizing on startup
